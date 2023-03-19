@@ -54,26 +54,34 @@ module.exports.deleteCard = (req, res) => {
 
 // Добавить лайк карточки
 module.exports.likeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send(controlResponse(card)))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка не найдена!' });
-        return;
-      }
-      res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
-    });
+  if (req.user._id && (typeof req.user._id === 'string')) {
+    Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+      .then((card) => res.send(controlResponse(card)))
+      .catch((err) => {
+        if (err.name === 'CastError') {
+          res.status(404).send({ message: 'Карточка не найдена!' });
+          return;
+        }
+        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      });
+  } else {
+    res.status(400).send({ message: 'Переданы некорректные данные!' });
+  }
 };
 
 // Убрать лайк карточки
 module.exports.dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send(controlResponse(card)))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка не найдена!' });
-        return;
-      }
-      res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
-    });
+  if (req.user._id && (typeof req.user._id === 'string')) {
+    Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+      .then((card) => res.send(controlResponse(card)))
+      .catch((err) => {
+        if (err.name === 'CastError') {
+          res.status(404).send({ message: 'Карточка не найдена!' });
+          return;
+        }
+        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      });
+  } else {
+    res.status(400).send({ message: 'Переданы некорректные данные!' });
+  }
 };
