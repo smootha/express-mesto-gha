@@ -1,5 +1,16 @@
 const Card = require('../models/card');
 
+// Функция для контроля над данными, приходящими с сервера
+function controlResponse(card) {
+  return {
+    createdAt: card.date,
+    likes: card.likes,
+    link: card.link,
+    name: card.name,
+    owner: card.owner,
+    _id: card._id,
+  };
+}
 // Получение всех карточек
 module.exports.getAllCards = (req, res) => {
   Card.find({})
@@ -17,7 +28,7 @@ module.exports.createCard = (req, res) => {
     const { name, link } = req.body;
 
     Card.create({ name, link, owner: req.user })
-      .then((card) => res.send({ data: card }))
+      .then((card) => res.send(controlResponse(card)))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           res.status(400).send({ message: 'Переданы некорректные данные!' });
@@ -31,7 +42,7 @@ module.exports.createCard = (req, res) => {
 // Удаление карточки
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then((card) => res.send(card))
+    .then((card) => res.send(controlResponse(card)))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(404).send({ message: 'Карточка не найдена!' });
@@ -44,7 +55,7 @@ module.exports.deleteCard = (req, res) => {
 // Добавить лайк карточки
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.send(controlResponse(card)))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(404).send({ message: 'Карточка не найдена!' });
@@ -57,7 +68,7 @@ module.exports.likeCard = (req, res) => {
 // Убрать лайк карточки
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.send(controlResponse(card)))
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(404).send({ message: 'Карточка не найдена!' });
