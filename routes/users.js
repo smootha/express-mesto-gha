@@ -10,7 +10,7 @@ const {
 // Возврат всех пользователей
 router.get('/', getUsers);
 // Возврат пользователя по _id
-router.get('/:id', getUserById);
+router.get('/:userId', getUserById);
 // Создание пользователя
 router.post('/', createUser);
 // Обновление профиля пользователя
