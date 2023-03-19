@@ -4,7 +4,7 @@ const User = require('../models/user');
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Ошибочка вышла!' }));
+    .catch(() => res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' }));
 };
 
 // Получение пользователя по ID
@@ -57,7 +57,7 @@ module.exports.updateProfile = (req, res) => {
           res.status(400).send({ message: 'Переданы некорректные данные!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Попробуйте еще раз!' });
+        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
@@ -78,7 +78,7 @@ module.exports.updateAvatar = (req, res) => {
           res.status(400).send({ message: 'Переданы некорректные данные!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Попробуйте еще раз!' });
+        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
