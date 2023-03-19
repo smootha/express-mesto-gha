@@ -27,7 +27,7 @@ module.exports.createUser = (req, res) => {
 module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.user, { name, about })
+  User.findByIdAndUpdate(req.user._id, { name, about })
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: 'Ошибочка вышла! Попробуйте еще раз!' }));
 };
@@ -36,7 +36,7 @@ module.exports.updateProfile = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar })
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: 'Ошибочка вышла! Попробуйте еще раз!' }));
 };
