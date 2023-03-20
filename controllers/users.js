@@ -23,6 +23,10 @@ module.exports.getUserById = (req, res) => {
     .then((user) => res.send(controlResponse(user)))
     .catch((err) => {
       if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные!' });
+        return;
+      }
+      if (err.name === 'TypeError') {
         res.status(404).send({ message: 'Пользователь не найден!' });
         return;
       }

@@ -22,8 +22,8 @@ module.exports.getAllCards = (req, res) => {
 // Создание карточки
 module.exports.createCard = (req, res) => {
   const keyValues = ['name', 'link'];
-  if (!(Object.keys(req.body).includes(keyValues))) {
-    res.status(422).send({ message: 'В форме пропущены данные!' });
+  if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
+    res.status(400).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, link } = req.body;
 
