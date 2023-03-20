@@ -35,7 +35,7 @@ module.exports.createUser = (req, res) => {
   // Проверка на наличие всех данных для создания пользователя
   const keyValues = ['name', 'about', 'avatar'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(422).send({ message: 'В форме пропущены данные!' });
+    res.status(400).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, about, avatar } = req.body;
 
@@ -56,7 +56,7 @@ module.exports.updateProfile = (req, res) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(422).send({ message: 'В форме пропущены данные!' });
+    res.status(400).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, about } = req.body;
 
@@ -81,7 +81,7 @@ module.exports.updateAvatar = (req, res) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
-    res.status(422).send({ message: 'В форме пропущены данные!' });
+    res.status(400).send({ message: 'В форме пропущены данные!' });
   } else {
     const { avatar } = req.body;
 
