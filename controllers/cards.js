@@ -54,10 +54,6 @@ module.exports.deleteCard = (req, res) => {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!!' });
         return;
       }
-      if (err.name === 'TypeError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-        return;
-      }
       res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
     });
 };
@@ -75,10 +71,6 @@ module.exports.likeCard = (req, res) => {
       })
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'TypeError') {
           res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
@@ -102,10 +94,6 @@ module.exports.dislikeCard = (req, res) => {
       })
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'TypeError') {
           res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }

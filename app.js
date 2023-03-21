@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 // Ограничение колличества запросов
 // eslint-disable-next-line import/no-extraneous-dependencies
-// const rateLimit = require('express-rate-limit');
+const rateLimit = require('express-rate-limit');
 // Защита от вэб уязвимостей
 // eslint-disable-next-line import/no-extraneous-dependencies
 const helmet = require('helmet');
@@ -13,7 +13,7 @@ const { NOT_FOUND } = require('./utils/utils');
 
 const { PORT = 3000 } = process.env;
 const app = express();
-/*
+
 const apiLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 100,
@@ -21,11 +21,11 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
   message: 'С вашего IP поступило слишком много запросов на сервер. Попробуйте через 5 минут',
 });
-*/
+
 app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(apiLimiter);
+app.use(apiLimiter);
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
