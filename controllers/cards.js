@@ -1,4 +1,5 @@
 const Card = require('../models/card');
+const { INTERNAL_ERROR, NOT_FOUND, BAD_REQUEST } = require('../utils/utils');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(card) {
@@ -14,16 +15,15 @@ function controlResponse(card) {
 // Получение всех карточек
 module.exports.getAllCards = (req, res) => {
   Card.find({})
-    .populate('owner')
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' }));
+    .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
 };
 
 // Создание карточки
 module.exports.createCard = (req, res) => {
   const keyValues = ['name', 'link'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(400).send({ message: 'В форме пропущены данные!' });
+    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, link } = req.body;
 
@@ -31,10 +31,10 @@ module.exports.createCard = (req, res) => {
       .then((card) => res.send(controlResponse(card)))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
@@ -45,14 +45,14 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => res.send(controlResponse(card)))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Карточка не найдена!' });
+        res.status(BAD_REQUEST).send({ message: 'Карточка не найдена!' });
         return;
       }
       if (err.name === 'TypeError') {
-        res.status(404).send({ message: 'Карточка не найдена!' });
+        res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
         return;
       }
-      res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
     });
 };
 
@@ -63,17 +63,17 @@ module.exports.likeCard = (req, res) => {
       .then((card) => res.send(controlResponse(card)))
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'TypeError') {
-          res.status(404).send({ message: 'Карточка не найдена!' });
+          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   } else {
-    res.status(400).send({ message: 'Переданы некорректные данные!' });
+    res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
   }
 };
 
@@ -84,16 +84,16 @@ module.exports.dislikeCard = (req, res) => {
       .then((card) => res.send(controlResponse(card)))
       .catch((err) => {
         if (err.name === 'CastError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'TypeError') {
-          res.status(404).send({ message: 'Карточка не найдена!' });
+          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   } else {
-    res.status(400).send({ message: 'Переданы некорректные данные!' });
+    res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
   }
 };

@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const { INTERNAL_ERROR, NOT_FOUND, BAD_REQUEST } = require('../utils/utils');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(user) {
@@ -14,23 +15,25 @@ function controlResponse(user) {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' }));
+    .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
 };
 
 // Получение пользователя по ID
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.send(controlResponse(user)))
+    .then((user) => {
+      if (!user) {
+        res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+      } else {
+        res.send(controlResponse(user));
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные!' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
         return;
       }
-      if (err.name === 'TypeError') {
-        res.status(404).send({ message: 'Пользователь не найден!' });
-        return;
-      }
-      res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
     });
 };
 
@@ -39,7 +42,7 @@ module.exports.createUser = (req, res) => {
   // Проверка на наличие всех данных для создания пользователя
   const keyValues = ['name', 'about', 'avatar'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(400).send({ message: 'В форме пропущены данные!' });
+    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, about, avatar } = req.body;
 
@@ -47,10 +50,10 @@ module.exports.createUser = (req, res) => {
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
@@ -60,22 +63,28 @@ module.exports.updateProfile = (req, res) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(400).send({ message: 'В форме пропущены данные!' });
+    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
     const { name, about } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-      .then((user) => res.send(controlResponse(user)))
+      .then((user) => {
+        if (!user) {
+          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+        } else {
+          res.send(controlResponse(user));
+        }
+      })
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'CastError') {
-          res.status(404).send({ message: 'Пользователь не найден!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
@@ -85,22 +94,28 @@ module.exports.updateAvatar = (req, res) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
-    res.status(400).send({ message: 'В форме пропущены данные!' });
+    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
     const { avatar } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-      .then((user) => res.send(controlResponse(user)))
+      .then((user) => {
+        if (!user) {
+          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+        } else {
+          res.send(controlResponse(user));
+        }
+      })
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'CastError') {
-          res.status(404).send({ message: 'Пользователь не найден!' });
+          res.status(BAD_REQUEST).send({ message: 'Пользователь не найден!' });
           return;
         }
-        res.status(500).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
 };
