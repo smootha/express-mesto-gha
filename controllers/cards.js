@@ -42,14 +42,20 @@ module.exports.createCard = (req, res) => {
 // Удаление карточки
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then((card) => res.send(controlResponse(card)))
+    .then((card) => {
+      if (!card) {
+        res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+      } else {
+        res.send(controlResponse(card));
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Карточка не найдена!' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!!' });
         return;
       }
       if (err.name === 'TypeError') {
-        res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
         return;
       }
       res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
@@ -60,14 +66,20 @@ module.exports.deleteCard = (req, res) => {
 module.exports.likeCard = (req, res) => {
   if (req.user._id && (typeof req.user._id === 'string')) {
     Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-      .then((card) => res.send(controlResponse(card)))
+      .then((card) => {
+        if (!card) {
+          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+        } else {
+          res.send(controlResponse(card));
+        }
+      })
       .catch((err) => {
         if (err.name === 'CastError') {
           res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'TypeError') {
-          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
@@ -81,14 +93,20 @@ module.exports.likeCard = (req, res) => {
 module.exports.dislikeCard = (req, res) => {
   if (req.user._id && (typeof req.user._id === 'string')) {
     Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-      .then((card) => res.send(controlResponse(card)))
+      .then((card) => {
+        if (!card) {
+          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+        } else {
+          res.send(controlResponse(card));
+        }
+      })
       .catch((err) => {
         if (err.name === 'CastError') {
           res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         if (err.name === 'TypeError') {
-          res.status(NOT_FOUND).send({ message: 'Карточка не найдена!' });
+          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
           return;
         }
         res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
