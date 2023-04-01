@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const { INTERNAL_ERROR, NOT_FOUND, BAD_REQUEST } = require('../utils/utils');
 
@@ -8,6 +10,8 @@ function controlResponse(user) {
     avatar: user.avatar,
     name: user.name,
     _id: user._id,
+    email: user.email,
+    password: user.password,
   };
 }
 
@@ -40,7 +44,7 @@ module.exports.getUserById = (req, res) => {
 // Создание пользователя
 module.exports.createUser = (req, res) => {
   // Проверка на наличие всех данных для создания пользователя
-  const keyValues = ['name', 'about', 'avatar', 'email', 'password'];
+  const keyValues = ['email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
     res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
@@ -52,13 +56,14 @@ module.exports.createUser = (req, res) => {
       password,
     } = req.body;
 
-    User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password,
-    })
+    bcrypt.hash(password, 13)
+      .then((hash) => User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      }))
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
         if (err.name === 'ValidationError') {
