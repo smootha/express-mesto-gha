@@ -40,13 +40,25 @@ module.exports.getUserById = (req, res) => {
 // Создание пользователя
 module.exports.createUser = (req, res) => {
   // Проверка на наличие всех данных для создания пользователя
-  const keyValues = ['name', 'about', 'avatar'];
+  const keyValues = ['name', 'about', 'avatar', 'email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
     res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
   } else {
-    const { name, about, avatar } = req.body;
+    const {
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    } = req.body;
 
-    User.create({ name, about, avatar })
+    User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    })
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
         if (err.name === 'ValidationError') {
