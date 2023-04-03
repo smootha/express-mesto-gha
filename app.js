@@ -8,10 +8,12 @@ const rateLimit = require('express-rate-limit');
 // Защита от вэб уязвимостей
 // eslint-disable-next-line import/no-extraneous-dependencies
 const helmet = require('helmet');
+const auth = require('./middlewares/auth');
 
 const { NOT_FOUND } = require('./utils/utils');
 
-const { PORT = 3000 } = process.env;
+const { PORT } = require('./config');
+
 const app = express();
 
 const apiLimiter = rateLimit({
@@ -37,6 +39,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/signup', require('./routes/signup'));
+app.use('/signin', require('./routes/signin'));
+
+// Авторизация
+app.use(auth);
+// Роуты доступные после успешной авторизации
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 

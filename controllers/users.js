@@ -1,7 +1,16 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { INTERNAL_ERROR, NOT_FOUND, BAD_REQUEST } = require('../utils/utils');
+const {
+  AUTH_ERROR,
+  INTERNAL_ERROR,
+  NOT_FOUND,
+  BAD_REQUEST,
+} = require('../utils/utils');
+
+const { JWT_SECRET } = require('../config');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(user) {
@@ -15,15 +24,32 @@ function controlResponse(user) {
   };
 }
 
+// Логин
+const login = (req, res) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials({ email, password })
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        JWT_SECRET,
+        { expiresIn: '7d' },
+      );
+      res.send({ token });
+    })
+    .catch(() => {
+      res.status(AUTH_ERROR).send({ message: 'Ошибка аутентификации!' });
+    });
+};
+
 // Получение всех пользователей
-module.exports.getUsers = (req, res) => {
+const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
     .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
 };
 
 // Получение пользователя по ID
-module.exports.getUserById = (req, res) => {
+const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
@@ -42,7 +68,7 @@ module.exports.getUserById = (req, res) => {
 };
 
 // Создание пользователя
-module.exports.createUser = (req, res) => {
+const createUser = (req, res) => {
   // Проверка на наличие всех данных для создания пользователя
   const keyValues = ['email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
@@ -76,7 +102,7 @@ module.exports.createUser = (req, res) => {
 };
 
 // Обновление профиля пользователя
-module.exports.updateProfile = (req, res) => {
+const updateProfile = (req, res) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
@@ -107,7 +133,7 @@ module.exports.updateProfile = (req, res) => {
 };
 
 // Обновление аватара пользователя
-module.exports.updateAvatar = (req, res) => {
+const updateAvatar = (req, res) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
@@ -135,4 +161,13 @@ module.exports.updateAvatar = (req, res) => {
         res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
       });
   }
+};
+
+module.exports = {
+  login,
+  getUsers,
+  getUserById,
+  createUser,
+  updateProfile,
+  updateAvatar,
 };

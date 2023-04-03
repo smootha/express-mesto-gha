@@ -13,14 +13,14 @@ function controlResponse(card) {
   };
 }
 // Получение всех карточек
-module.exports.getAllCards = (req, res) => {
+const getAllCards = (req, res) => {
   Card.find({})
     .then((cards) => res.send(cards))
     .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
 };
 
 // Создание карточки
-module.exports.createCard = (req, res) => {
+const createCard = (req, res) => {
   const keyValues = ['name', 'link'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
     res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
@@ -40,7 +40,7 @@ module.exports.createCard = (req, res) => {
 };
 
 // Удаление карточки
-module.exports.deleteCard = (req, res) => {
+const deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (!card) {
@@ -59,7 +59,7 @@ module.exports.deleteCard = (req, res) => {
 };
 
 // Добавить лайк карточки
-module.exports.likeCard = (req, res) => {
+const likeCard = (req, res) => {
   if (req.user._id && (typeof req.user._id === 'string')) {
     Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
       .then((card) => {
@@ -82,7 +82,7 @@ module.exports.likeCard = (req, res) => {
 };
 
 // Убрать лайк карточки
-module.exports.dislikeCard = (req, res) => {
+const dislikeCard = (req, res) => {
   if (req.user._id && (typeof req.user._id === 'string')) {
     Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
       .then((card) => {
@@ -102,4 +102,12 @@ module.exports.dislikeCard = (req, res) => {
   } else {
     res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
   }
+};
+
+module.exports = {
+  getAllCards,
+  createCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
 };
