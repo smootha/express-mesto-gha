@@ -1,5 +1,14 @@
 // Константы кодов ошибок
-module.exports.BAD_REQUEST = 400;
-module.exports.AUTH_ERROR = 401;
-module.exports.NOT_FOUND = 404;
-module.exports.INTERNAL_ERROR = 500;
+const BAD_REQUEST = 400;
+const AUTH_ERROR = 401;
+const NOT_FOUND = 404;
+const CONFLICT_ERROR = 409;
+const INTERNAL_ERROR = 500;
+
+module.exports = {
+  BAD_REQUEST,
+  AUTH_ERROR,
+  NOT_FOUND,
+  CONFLICT_ERROR,
+  INTERNAL_ERROR,
+};

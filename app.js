@@ -8,11 +8,13 @@ const rateLimit = require('express-rate-limit');
 // Защита от вэб уязвимостей
 // eslint-disable-next-line import/no-extraneous-dependencies
 const helmet = require('helmet');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const cors = require('cors');
 const auth = require('./middlewares/auth');
 
 const { NOT_FOUND } = require('./utils/utils');
 
-const { PORT } = require('./config');
+const { PORT, DB_ADRESS } = require('./config');
 
 const app = express();
 
@@ -25,11 +27,12 @@ const apiLimiter = rateLimit({
 });
 
 app.use(helmet());
+app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect(DB_ADRESS);
 
 app.use((req, res, next) => {
   req.user = {
@@ -53,5 +56,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log('Loaded');
+  console.log(`App listening on port ${PORT}`);
 });

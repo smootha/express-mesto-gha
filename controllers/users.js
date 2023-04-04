@@ -8,6 +8,7 @@ const {
   INTERNAL_ERROR,
   NOT_FOUND,
   BAD_REQUEST,
+  CONFLICT_ERROR,
 } = require('../utils/utils');
 
 const { JWT_SECRET } = require('../config');
@@ -27,14 +28,18 @@ function controlResponse(user) {
 // Логин
 const login = (req, res) => {
   const { email, password } = req.body;
-  User.findUserByCredentials({ email, password })
+  User.findOne({ email })
+    .orFail(() => {
+      res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+    })
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        JWT_SECRET,
-        { expiresIn: '7d' },
-      );
-      res.send({ token });
+      res.send(user);
+//      const token = jwt.sign(
+//        { _id: user._id },
+//        JWT_SECRET,
+//        { expiresIn: '7d' },
+//      );
+//      res.send({ token });
     })
     .catch(() => {
       res.status(AUTH_ERROR).send({ message: 'Ошибка аутентификации!' });
@@ -94,6 +99,10 @@ const createUser = (req, res) => {
       .catch((err) => {
         if (err.name === 'ValidationError') {
           res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
+          return;
+        }
+        if (err.code === 11000) {
+          res.status(CONFLICT_ERROR).send({ message: 'Такой Email уже зарегистрирован!' });
           return;
         }
         res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
