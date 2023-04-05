@@ -10,7 +10,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const cors = require('cors');
-const auth = require('./middlewares/auth');
+const { auth } = require('./middlewares/auth');
 
 const { NOT_FOUND } = require('./utils/utils');
 
@@ -33,14 +33,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(apiLimiter);
 
 mongoose.connect(DB_ADRESS);
-
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6428852995bf861f4642128c',
-  };
-
-  next();
-});
 
 app.use('/signup', require('./routes/signup'));
 app.use('/signin', require('./routes/signin'));

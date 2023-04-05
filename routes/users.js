@@ -1,11 +1,14 @@
 const router = require('express').Router();
 const {
   getUsers,
+  getUser,
   getUserById,
   updateProfile,
   updateAvatar,
 } = require('../controllers/users');
 
+// Возврат авторизованного пользователя
+router.get('/me', getUser);
 // Возврат всех пользователей
 router.get('/', getUsers);
 // Возврат пользователя по _id

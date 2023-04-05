@@ -2,7 +2,9 @@
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
+const { JWT_SECRET } = require('../config');
 const {
   AUTH_ERROR,
   INTERNAL_ERROR,
@@ -10,8 +12,6 @@ const {
   BAD_REQUEST,
   CONFLICT_ERROR,
 } = require('../utils/utils');
-
-const { JWT_SECRET } = require('../config');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(user) {
@@ -28,22 +28,22 @@ function controlResponse(user) {
 // Логин
 const login = (req, res) => {
   const { email, password } = req.body;
-  User.findOne({ email })
-    .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
-    })
+
+  return User.findUserByCredentials(email, password)
     .then((user) => {
-      res.send(user);
-//      const token = jwt.sign(
-//        { _id: user._id },
-//        JWT_SECRET,
-//        { expiresIn: '7d' },
-//      );
-//      res.send({ token });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      res.send({ user, token });
     })
-    .catch(() => {
-      res.status(AUTH_ERROR).send({ message: 'Ошибка аутентификации!' });
+    .catch((err) => {
+      res.status(AUTH_ERROR).send({ message: err.message });
     });
+};
+
+// Получение профиля пользователя
+const getUser = (req, res) => {
+  User.findById(req.user)
+    .then((user) => res.send(user))
+    .catch(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден' }));
 };
 
 // Получение всех пользователей
@@ -174,6 +174,7 @@ const updateAvatar = (req, res) => {
 
 module.exports = {
   login,
+  getUser,
   getUsers,
   getUserById,
   createUser,
