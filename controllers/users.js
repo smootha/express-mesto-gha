@@ -6,8 +6,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { JWT_SECRET } = require('../config');
 const {
-  AUTH_ERROR,
-  INTERNAL_ERROR,
   NOT_FOUND,
   BAD_REQUEST,
   CONFLICT_ERROR,
@@ -26,7 +24,7 @@ function controlResponse(user) {
 }
 
 // Логин
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -34,27 +32,25 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.send({ user, token });
     })
-    .catch((err) => {
-      res.status(AUTH_ERROR).send({ message: err.message });
-    });
+    .catch((err) => next(err));
 };
 
 // Получение профиля пользователя
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   User.findById(req.user)
     .then((user) => res.send(user))
-    .catch(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден' }));
+    .catch((err) => next(err));
 };
 
 // Получение всех пользователей
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
+    .catch((err) => next(err));
 };
 
 // Получение пользователя по ID
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
@@ -64,16 +60,12 @@ const getUserById = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-        return;
-      }
-      res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      next(err);
     });
 };
 
 // Создание пользователя
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   // Проверка на наличие всех данных для создания пользователя
   const keyValues = ['email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
@@ -97,21 +89,17 @@ const createUser = (req, res) => {
       }))
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
         if (err.code === 11000) {
           res.status(CONFLICT_ERROR).send({ message: 'Такой Email уже зарегистрирован!' });
           return;
         }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(err);
       });
   }
 };
 
 // Обновление профиля пользователя
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
@@ -120,29 +108,18 @@ const updateProfile = (req, res) => {
     const { name, about } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+      .orFail(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' }))
       .then((user) => {
-        if (!user) {
-          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
-        } else {
-          res.send(controlResponse(user));
-        }
+        res.send(controlResponse(user));
       })
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(err);
       });
   }
 };
 
 // Обновление аватара пользователя
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
@@ -151,23 +128,12 @@ const updateAvatar = (req, res) => {
     const { avatar } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+      .orFail(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' }))
       .then((user) => {
-        if (!user) {
-          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
-        } else {
-          res.send(controlResponse(user));
-        }
+        res.send(controlResponse(user));
       })
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Пользователь не найден!' });
-          return;
-        }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(err);
       });
   }
 };

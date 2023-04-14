@@ -11,6 +11,7 @@ const helmet = require('helmet');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const cors = require('cors');
 const { auth } = require('./middlewares/auth');
+const { errorHandler } = require('./middlewares/error-handler');
 
 const { NOT_FOUND } = require('./utils/utils');
 
@@ -42,6 +43,8 @@ app.use(auth);
 // Роуты доступные после успешной авторизации
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use(errorHandler);
 
 app.use((req, res) => {
   res.status(NOT_FOUND).send({ message: 'Страница не найдена!' });
