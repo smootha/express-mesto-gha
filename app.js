@@ -10,6 +10,9 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const cors = require('cors');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { errors } = require('celebrate');
+
 const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 
@@ -44,6 +47,9 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+// Обработчик ошибок celebrate
+app.use(errors());
+// Централизованный обработчик ошибок
 app.use(errorHandler);
 
 app.use((req, res) => {

@@ -5,11 +5,9 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const { JWT_SECRET } = require('../config');
-const {
-  NOT_FOUND,
-  BAD_REQUEST,
-  CONFLICT_ERROR,
-} = require('../utils/utils');
+const { NotFoundError } = require('../middlewares/NotFoundError');
+const { BadRequestError } = require('../middlewares/BadRequestError');
+const { ConflictError } = require('../middlewares/ConflictError');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(user) {
@@ -54,7 +52,7 @@ const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+        throw new NotFoundError('Пользователь не найден!');
       } else {
         res.send(controlResponse(user));
       }
@@ -69,7 +67,7 @@ const createUser = (req, res, next) => {
   // Проверка на наличие всех данных для создания пользователя
   const keyValues = ['email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
     const {
       name,
@@ -90,8 +88,7 @@ const createUser = (req, res, next) => {
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
         if (err.code === 11000) {
-          res.status(CONFLICT_ERROR).send({ message: 'Такой Email уже зарегистрирован!' });
-          return;
+          throw new ConflictError('Такой Email уже зарегистрирован!');
         }
         next(err);
       });
@@ -103,12 +100,12 @@ const updateProfile = (req, res, next) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
     const { name, about } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-      .orFail(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' }))
+      .orFail(() => new NotFoundError('Пользователь не найден!'))
       .then((user) => {
         res.send(controlResponse(user));
       })
@@ -123,12 +120,12 @@ const updateAvatar = (req, res, next) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
     const { avatar } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-      .orFail(() => res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' }))
+      .orFail(() => new NotFoundError('Пользователь не найден!'))
       .then((user) => {
         res.send(controlResponse(user));
       })
