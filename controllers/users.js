@@ -89,6 +89,8 @@ const createUser = (req, res, next) => {
       .catch((err) => {
         if (err.code === 11000) {
           next(new ConflictError('Такой Email уже зарегистрирован!'));
+        } else if (err.errors.avatar) {
+          next(new BadRequestError(err.message));
         }
         next(err);
       });
