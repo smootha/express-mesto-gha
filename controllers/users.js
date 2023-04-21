@@ -17,7 +17,6 @@ function controlResponse(user) {
     name: user.name,
     _id: user._id,
     email: user.email,
-    password: user.password,
   };
 }
 
@@ -35,8 +34,8 @@ const login = (req, res, next) => {
 
 // Получение профиля пользователя
 const getUser = (req, res, next) => {
-  User.findById(req.user)
-    .then((user) => res.send(user))
+  User.findById(req.user._id)
+    .then((user) => res.send(controlResponse(user)))
     .catch((err) => next(err));
 };
 
@@ -85,10 +84,14 @@ const createUser = (req, res, next) => {
         email,
         password: hash,
       }))
-      .then((user) => res.send(controlResponse(user)))
+      .then((user) => {
+        res.send(controlResponse(user));
+      })
       .catch((err) => {
         if (err.code === 11000) {
           next(new ConflictError('Такой Email уже зарегистрирован!'));
+        } else if (err.errors.avatar) {
+          next(new BadRequestError(err.message));
         }
         next(err);
       });

@@ -8,7 +8,7 @@ const {
   updateProfile,
   updateAvatar,
 } = require('../controllers/users');
-const { tokenHeader } = require('../utils/utils');
+const { tokenHeader, pictureRegex, userId } = require('../utils/utils');
 
 // Возврат авторизованного пользователя
 router.get('/me', celebrate({
@@ -20,6 +20,7 @@ router.get('/', celebrate({
 }), getUsers);
 // Возврат пользователя по _id
 router.get('/:userId', celebrate({
+  [Segments.PARAMS]: userId,
   [Segments.HEADERS]: tokenHeader,
 }), getUserById);
 // Обновление профиля пользователя
@@ -34,7 +35,11 @@ router.patch('/me', celebrate({
 router.patch('/me/avatar', celebrate({
   [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
-    avatar: Joi.string().uri().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    avatar: Joi.string()
+      .regex(pictureRegex)
+      .message('Некорректная ссылка на изображение!')
+      .uri()
+      .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
   }),
 }), updateAvatar);
 

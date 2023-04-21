@@ -9,7 +9,7 @@ const {
   likeCard,
   dislikeCard,
 } = require('../controllers/cards');
-const { tokenHeader } = require('../utils/utils');
+const { tokenHeader, cardId, pictureRegex } = require('../utils/utils');
 
 // Получение карточек
 router.get('/', celebrate({
@@ -20,19 +20,26 @@ router.post('/', celebrate({
   [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().uri().required(),
+    link: Joi.string()
+      .uri()
+      .regex(pictureRegex)
+      .message('Некорректная ссылка на изображение!')
+      .required(),
   }),
 }), createCard);
 // Удаление карточки
 router.delete('/:cardId', celebrate({
+  [Segments.PARAMS]: cardId,
   [Segments.HEADERS]: tokenHeader,
 }), deleteCard);
 // Добавить лайк карточки
 router.put('/:cardId/likes', celebrate({
+  [Segments.PARAMS]: cardId,
   [Segments.HEADERS]: tokenHeader,
 }), likeCard);
 // Убрать лайк карточки
 router.delete('/:cardId/likes', celebrate({
+  [Segments.PARAMS]: cardId,
   [Segments.HEADERS]: tokenHeader,
 }), dislikeCard);
 

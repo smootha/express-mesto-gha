@@ -12,9 +12,17 @@ const INTERNAL_ERROR = 500;
 const tokenHeader = Joi.object().keys({
   authorization: Joi.string().required(),
 }).unknown(true);
+// Константа ID пользователя в роутах
+const userId = Joi.object().keys({
+  userId: Joi.string().length(24),
+});
+// Константа ID карточек в роутах
+const cardId = Joi.object().keys({
+  cardId: Joi.string().length(24),
+});
 
-// RegEx для валидации аватара
-const avatarRegex = /^(https?:)\/\/(w{3}\.)?[\w._~:/?#[\]@!$&'()*+,;=]+(\/(#)?)?/i;
+// RegEx для валидации изображений
+const pictureRegex = /^(https?:)\/\/(w{3}\.)?[\w._~:/?#[\]@!$&'()*+,;=]+(\/(#)?)?/i;
 
 module.exports = {
   BAD_REQUEST,
@@ -22,6 +30,8 @@ module.exports = {
   NOT_FOUND,
   CONFLICT_ERROR,
   INTERNAL_ERROR,
-  avatarRegex,
+  pictureRegex,
   tokenHeader,
+  userId,
+  cardId,
 };

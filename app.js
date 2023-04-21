@@ -12,13 +12,12 @@ const helmet = require('helmet');
 const cors = require('cors');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { errors } = require('celebrate');
+const { PORT, DB_ADRESS } = require('./config');
 
 const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 
 const { NOT_FOUND } = require('./utils/utils');
-
-const { PORT, DB_ADRESS } = require('./config');
 
 const app = express();
 
@@ -31,7 +30,7 @@ const apiLimiter = rateLimit({
 });
 
 app.use(helmet());
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: `http://localhost:${PORT}` }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(apiLimiter);

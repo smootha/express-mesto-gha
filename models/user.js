@@ -3,7 +3,7 @@ const { mongoose } = require('mongoose');
 const validator = require('validator');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
-const { avatarRegex } = require('../utils/utils');
+const { pictureRegex } = require('../utils/utils');
 const { AuthError } = require('../middlewares/AuthError');
 
 const userSchema = new mongoose.Schema({
@@ -21,8 +21,13 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    match: [avatarRegex, 'Некорректная ссылка на изображение!'],
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator(value) {
+        return pictureRegex.test(value);
+      },
+      message: 'Некорректная ссылка на изображение!',
+    },
   },
   email: {
     type: String,
@@ -43,6 +48,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .select('+password')
@@ -57,7 +63,8 @@ userSchema.statics.findUserByCredentials = function (email, password) {
           }
           return user;
         });
-    });
+    })
+    .catch(new AuthError('Неверные почта или пароль!'));
 };
 
 module.exports = mongoose.model('user', userSchema);
