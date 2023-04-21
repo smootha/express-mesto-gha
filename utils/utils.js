@@ -13,11 +13,15 @@ const tokenHeader = Joi.object().keys({
   authorization: Joi.string().required(),
 }).unknown(true);
 
+// RegEx для валидации аватара
+const avatarRegex = /^(https?:)\/\/(w{3}\.)?[\w._~:/?#[\]@!$&'()*+,;=]+(\/(#)?)?/i;
+
 module.exports = {
   BAD_REQUEST,
   AUTH_ERROR,
   NOT_FOUND,
   CONFLICT_ERROR,
   INTERNAL_ERROR,
+  avatarRegex,
   tokenHeader,
 };

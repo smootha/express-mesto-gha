@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
+const { mongoose } = require('mongoose');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const validator = require('validator');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
+const { avatarRegex } = require('../utils/utils');
 const { AuthError } = require('../middlewares/AuthError');
 
 const userSchema = new mongoose.Schema({
@@ -20,6 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    match: [avatarRegex, 'Некорректная ссылка на изображение!'],
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {

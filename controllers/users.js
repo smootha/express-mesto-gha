@@ -88,7 +88,7 @@ const createUser = (req, res, next) => {
       .then((user) => res.send(controlResponse(user)))
       .catch((err) => {
         if (err.code === 11000) {
-          throw new ConflictError('Такой Email уже зарегистрирован!');
+          next(new ConflictError('Такой Email уже зарегистрирован!'));
         }
         next(err);
       });
@@ -130,7 +130,7 @@ const updateAvatar = (req, res, next) => {
         res.send(controlResponse(user));
       })
       .catch((err) => {
-        next(err);
+        next(new BadRequestError(err.message));
       });
   }
 };
