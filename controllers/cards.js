@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const { NotFoundError } = require('../middlewares/NotFoundError');
 const { BadRequestError } = require('../middlewares/BadRequestError');
+const { ForbiddenError } = require('../middlewares/ForbiddenError');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(card) {
@@ -37,7 +38,7 @@ const createCard = (req, res, next) => {
 // Удаление карточки
 const deleteCard = (req, res, next) => {
   Card.findOneAndDelete({ _id: req.params.cardId, owner: req.user })
-    .orFail(() => new NotFoundError('Карточка не найдена!'))
+    .orFail(() => new ForbiddenError('Отказано в доступе: вы не создатель этой карточки!'))
     .then((card) => {
       res.send(controlResponse(card));
     })
