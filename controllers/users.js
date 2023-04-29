@@ -1,5 +1,13 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+const bcrypt = require('bcryptjs');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const jwt = require('jsonwebtoken');
+
 const User = require('../models/user');
-const { INTERNAL_ERROR, NOT_FOUND, BAD_REQUEST } = require('../utils/utils');
+const { JWT_SECRET } = require('../config');
+const { NotFoundError } = require('../middlewares/NotFoundError');
+const { BadRequestError } = require('../middlewares/BadRequestError');
+const { ConflictError } = require('../middlewares/ConflictError');
 
 // Функция для контроля над данными, приходящими с сервера
 function controlResponse(user) {
@@ -8,114 +16,134 @@ function controlResponse(user) {
     avatar: user.avatar,
     name: user.name,
     _id: user._id,
+    email: user.email,
   };
 }
 
+// Логин
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      res.send({ user, token });
+    })
+    .catch((err) => next(err));
+};
+
+// Получение профиля пользователя
+const getUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => res.send(controlResponse(user)))
+    .catch((err) => next(err));
+};
+
 // Получение всех пользователей
-module.exports.getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' }));
+    .catch((err) => next(err));
 };
 
 // Получение пользователя по ID
-module.exports.getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
+        throw new NotFoundError('Пользователь не найден!');
       } else {
         res.send(controlResponse(user));
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-        return;
-      }
-      res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+      next(err);
     });
 };
 
 // Создание пользователя
-module.exports.createUser = (req, res) => {
+const createUser = (req, res, next) => {
   // Проверка на наличие всех данных для создания пользователя
-  const keyValues = ['name', 'about', 'avatar'];
+  const keyValues = ['email', 'password'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
-    const { name, about, avatar } = req.body;
+    const {
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    } = req.body;
 
-    User.create({ name, about, avatar })
-      .then((user) => res.send(controlResponse(user)))
+    bcrypt.hash(password, 13)
+      .then((hash) => User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      }))
+      .then((user) => {
+        res.send(controlResponse(user));
+      })
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
+        if (err.code === 11000) {
+          next(new ConflictError('Такой Email уже зарегистрирован!'));
+        } else if (err.errors.avatar) {
+          next(new BadRequestError(err.message));
         }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(err);
       });
   }
 };
 
 // Обновление профиля пользователя
-module.exports.updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   // Проверка на наличие всех данных для обновления данных пользователя
   const keyValues = ['name', 'about'];
   if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
     const { name, about } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+      .orFail(() => new NotFoundError('Пользователь не найден!'))
       .then((user) => {
-        if (!user) {
-          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
-        } else {
-          res.send(controlResponse(user));
-        }
+        res.send(controlResponse(user));
       })
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(err);
       });
   }
 };
 
 // Обновление аватара пользователя
-module.exports.updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   // Проверка на наличие всех данных для обновления аватара пользователя
   const keyValue = 'avatar';
   if (!(Object.keys(req.body).includes(keyValue))) {
-    res.status(BAD_REQUEST).send({ message: 'В форме пропущены данные!' });
+    throw new BadRequestError('В форме пропущены данные!');
   } else {
     const { avatar } = req.body;
 
     User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+      .orFail(() => new NotFoundError('Пользователь не найден!'))
       .then((user) => {
-        if (!user) {
-          res.status(NOT_FOUND).send({ message: 'Пользователь не найден!' });
-        } else {
-          res.send(controlResponse(user));
-        }
+        res.send(controlResponse(user));
       })
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные!' });
-          return;
-        }
-        if (err.name === 'CastError') {
-          res.status(BAD_REQUEST).send({ message: 'Пользователь не найден!' });
-          return;
-        }
-        res.status(INTERNAL_ERROR).send({ message: 'Ошибочка вышла! Неизвестная!' });
+        next(new BadRequestError(err.message));
       });
   }
+};
+
+module.exports = {
+  login,
+  getUser,
+  getUsers,
+  getUserById,
+  createUser,
+  updateProfile,
+  updateAvatar,
 };

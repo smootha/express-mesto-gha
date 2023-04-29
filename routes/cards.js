@@ -1,4 +1,7 @@
 const router = require('express').Router();
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { celebrate, Joi, Segments } = require('celebrate');
+
 const {
   getAllCards,
   createCard,
@@ -6,16 +9,38 @@ const {
   likeCard,
   dislikeCard,
 } = require('../controllers/cards');
+const { tokenHeader, cardId, pictureRegex } = require('../utils/utils');
 
 // Получение карточек
-router.get('/', getAllCards);
+router.get('/', celebrate({
+  [Segments.HEADERS]: tokenHeader,
+}), getAllCards);
 // Создание карточки
-router.post('/', createCard);
+router.post('/', celebrate({
+  [Segments.HEADERS]: tokenHeader,
+  [Segments.BODY]: Joi.object().keys({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string()
+      .uri()
+      .regex(pictureRegex)
+      .message('Некорректная ссылка на изображение!')
+      .required(),
+  }),
+}), createCard);
 // Удаление карточки
-router.delete('/:cardId', deleteCard);
+router.delete('/:cardId', celebrate({
+  [Segments.PARAMS]: cardId,
+  [Segments.HEADERS]: tokenHeader,
+}), deleteCard);
 // Добавить лайк карточки
-router.put('/:cardId/likes', likeCard);
+router.put('/:cardId/likes', celebrate({
+  [Segments.PARAMS]: cardId,
+  [Segments.HEADERS]: tokenHeader,
+}), likeCard);
 // Убрать лайк карточки
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId/likes', celebrate({
+  [Segments.PARAMS]: cardId,
+  [Segments.HEADERS]: tokenHeader,
+}), dislikeCard);
 
 module.exports = router;
