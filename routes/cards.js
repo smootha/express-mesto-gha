@@ -19,7 +19,10 @@ router.get('/', celebrate({
 router.post('/', celebrate({
   [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
+    name: Joi.string()
+      .min(2)
+      .max(30)
+      .required(),
     link: Joi.string()
       .uri()
       .regex(pictureRegex)

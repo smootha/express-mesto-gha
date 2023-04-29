@@ -27,8 +27,14 @@ router.get('/:userId', celebrate({
 router.patch('/me', celebrate({
   [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
-    name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
-    about: Joi.string().min(2).max(30).default('Исследователь'),
+    name: Joi.string()
+      .min(2)
+      .max(30)
+      .default('Жак-Ив Кусто'),
+    about: Joi.string()
+      .min(2)
+      .max(30)
+      .default('Исследователь'),
   }),
 }), updateProfile);
 // Обновить аватар
