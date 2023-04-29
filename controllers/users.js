@@ -56,9 +56,7 @@ const getUserById = (req, res, next) => {
         res.send(controlResponse(user));
       }
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 };
 
 // Создание пользователя
@@ -109,12 +107,8 @@ const updateProfile = (req, res, next) => {
 
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
       .orFail(() => new NotFoundError('Пользователь не найден!'))
-      .then((user) => {
-        res.send(controlResponse(user));
-      })
-      .catch((err) => {
-        next(err);
-      });
+      .then((user) => res.send(controlResponse(user)))
+      .catch((err) => next(err));
   }
 };
 
@@ -132,9 +126,7 @@ const updateAvatar = (req, res, next) => {
       .then((user) => {
         res.send(controlResponse(user));
       })
-      .catch((err) => {
-        next(new BadRequestError(err.message));
-      });
+      .catch((err) => next(new BadRequestError(err.message)));
   }
 };
 

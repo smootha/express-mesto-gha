@@ -17,16 +17,11 @@ const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 
 const { NOT_FOUND } = require('./utils/utils');
+const linterSettings = require('./utils/linterSettings');
 
 const app = express();
 
-const apiLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'С вашего IP поступило слишком много запросов на сервер. Попробуйте через 5 минут',
-});
+const apiLimiter = rateLimit(linterSettings);
 
 app.use(helmet());
 app.use(cors({ origin: `http://localhost:${PORT}` }));

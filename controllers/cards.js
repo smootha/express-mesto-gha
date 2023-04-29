@@ -43,8 +43,9 @@ const deleteCard = (req, res, next) => {
     .then((card) => {
       // eslint-disable-next-line eqeqeq
       if (card.owner == req.user._id) {
-        res.send(controlResponse(card));
-        Card.deleteOne({ _id: id });
+        Card.findByIdAndRemove({ _id: id })
+          .then((deleted) => res.send(controlResponse(deleted)))
+          .catch((err) => next(err));
       } else {
         throw new ForbiddenError('Отказано в доступе: данная карточка вам неподвластна!');
       }
