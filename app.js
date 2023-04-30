@@ -17,10 +17,10 @@ const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 
 const { NotFoundError } = require('./middlewares/NotFoundError');
-const linterSettings = require('./utils/linterSettings');
+const { limiterSettings } = require('./utils/limiterSettings');
 
 const app = express();
-const apiLimiter = rateLimit(linterSettings);
+const apiLimiter = rateLimit(limiterSettings);
 
 app.use(helmet());
 app.use(cors({ origin: `http://localhost:${PORT}` }));

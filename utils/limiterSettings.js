@@ -1,4 +1,4 @@
-const linterSettings = {
+const limiterSettings = {
   windowMs: 5 * 60 * 1000,
   max: 100,
   standardHeaders: true,
@@ -6,4 +6,4 @@ const linterSettings = {
   message: 'С вашего IP поступило слишком много запросов на сервер. Попробуйте через 5 минут',
 };
 
-module.exports = { linterSettings };
+module.exports = { limiterSettings };
