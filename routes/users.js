@@ -8,44 +8,37 @@ const {
   updateProfile,
   updateAvatar,
 } = require('../controllers/users');
-const { tokenHeader, pictureRegex, userId } = require('../utils/utils');
+const { pictureRegex, userId } = require('../utils/utils');
 
 // Возврат авторизованного пользователя
-router.get('/me', celebrate({
-  [Segments.HEADERS]: tokenHeader,
-}), getUser);
+router.get('/me', getUser);
 // Возврат всех пользователей
-router.get('/', celebrate({
-  [Segments.HEADERS]: tokenHeader,
-}), getUsers);
+router.get('/', getUsers);
 // Возврат пользователя по _id
 router.get('/:userId', celebrate({
   [Segments.PARAMS]: userId,
-  [Segments.HEADERS]: tokenHeader,
 }), getUserById);
 // Обновление профиля пользователя
 router.patch('/me', celebrate({
-  [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string()
       .min(2)
       .max(30)
-      .default('Жак-Ив Кусто'),
+      .required(),
     about: Joi.string()
       .min(2)
       .max(30)
-      .default('Исследователь'),
+      .required(),
   }),
 }), updateProfile);
 // Обновить аватар
 router.patch('/me/avatar', celebrate({
-  [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
     avatar: Joi.string()
       .regex(pictureRegex)
       .message('Некорректная ссылка на изображение!')
       .uri()
-      .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+      .required(),
   }),
 }), updateAvatar);
 

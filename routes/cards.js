@@ -9,15 +9,12 @@ const {
   likeCard,
   dislikeCard,
 } = require('../controllers/cards');
-const { tokenHeader, cardId, pictureRegex } = require('../utils/utils');
+const { cardId, pictureRegex } = require('../utils/utils');
 
 // Получение карточек
-router.get('/', celebrate({
-  [Segments.HEADERS]: tokenHeader,
-}), getAllCards);
+router.get('/', getAllCards);
 // Создание карточки
 router.post('/', celebrate({
-  [Segments.HEADERS]: tokenHeader,
   [Segments.BODY]: Joi.object().keys({
     name: Joi.string()
       .min(2)
@@ -33,17 +30,14 @@ router.post('/', celebrate({
 // Удаление карточки
 router.delete('/:cardId', celebrate({
   [Segments.PARAMS]: cardId,
-  [Segments.HEADERS]: tokenHeader,
 }), deleteCard);
 // Добавить лайк карточки
 router.put('/:cardId/likes', celebrate({
   [Segments.PARAMS]: cardId,
-  [Segments.HEADERS]: tokenHeader,
 }), likeCard);
 // Убрать лайк карточки
 router.delete('/:cardId/likes', celebrate({
   [Segments.PARAMS]: cardId,
-  [Segments.HEADERS]: tokenHeader,
 }), dislikeCard);
 
 module.exports = router;
