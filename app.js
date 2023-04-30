@@ -20,7 +20,13 @@ const { NotFoundError } = require('./middlewares/NotFoundError');
 const linterSettings = require('./utils/linterSettings');
 
 const app = express();
-const apiLimiter = rateLimit(linterSettings);
+const apiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'С вашего IP поступило слишком много запросов на сервер. Попробуйте через 5 минут',
+});
 
 app.use(helmet());
 app.use(cors({ origin: `http://localhost:${PORT}` }));
