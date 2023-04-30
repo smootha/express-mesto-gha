@@ -16,11 +16,10 @@ const { PORT, DB_ADRESS } = require('./config');
 const { auth } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/error-handler');
 
-const { NOT_FOUND } = require('./utils/utils');
+const { NotFoundError } = require('./middlewares/NotFoundError');
 const linterSettings = require('./utils/linterSettings');
 
 const app = express();
-
 const apiLimiter = rateLimit(linterSettings);
 
 app.use(helmet());
@@ -40,14 +39,13 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Страница не найдена!'));
+});
 // Обработчик ошибок celebrate
 app.use(errors());
 // Централизованный обработчик ошибок
 app.use(errorHandler);
-
-app.use((req, res) => {
-  res.status(NOT_FOUND).send({ message: 'Страница не найдена!' });
-});
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
