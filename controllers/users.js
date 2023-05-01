@@ -29,21 +29,21 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res.send({ user, token });
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 // Получение профиля пользователя
 const getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.send(controlResponse(user)))
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 // Получение всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 // Получение пользователя по ID
@@ -56,7 +56,7 @@ const getUserById = (req, res, next) => {
         res.send(controlResponse(user));
       }
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
 
 // Создание пользователя
@@ -108,7 +108,7 @@ const updateProfile = (req, res, next) => {
     User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
       .orFail(() => new NotFoundError('Пользователь не найден!'))
       .then((user) => res.send(controlResponse(user)))
-      .catch((err) => next(err));
+      .catch(next);
   }
 };
 

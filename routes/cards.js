@@ -13,6 +13,7 @@ const { cardId, pictureRegex } = require('../utils/utils');
 
 // Получение карточек
 router.get('/', getAllCards);
+
 // Создание карточки
 router.post('/', celebrate({
   [Segments.BODY]: Joi.object().keys({
@@ -27,14 +28,17 @@ router.post('/', celebrate({
       .required(),
   }),
 }), createCard);
+
 // Удаление карточки
 router.delete('/:cardId', celebrate({
   [Segments.PARAMS]: cardId,
 }), deleteCard);
+
 // Добавить лайк карточки
 router.put('/:cardId/likes', celebrate({
   [Segments.PARAMS]: cardId,
 }), likeCard);
+
 // Убрать лайк карточки
 router.delete('/:cardId/likes', celebrate({
   [Segments.PARAMS]: cardId,
