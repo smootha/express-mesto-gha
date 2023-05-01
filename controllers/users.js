@@ -61,73 +61,55 @@ const getUserById = (req, res, next) => {
 
 // Создание пользователя
 const createUser = (req, res, next) => {
-  // Проверка на наличие всех данных для создания пользователя
-  const keyValues = ['email', 'password'];
-  if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    throw new BadRequestError('В форме пропущены данные!');
-  } else {
-    const {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+
+  bcrypt.hash(password, 13)
+    .then((hash) => User.create({
       name,
       about,
       avatar,
       email,
-      password,
-    } = req.body;
-
-    bcrypt.hash(password, 13)
-      .then((hash) => User.create({
-        name,
-        about,
-        avatar,
-        email,
-        password: hash,
-      }))
-      .then((user) => {
-        res.send(controlResponse(user));
-      })
-      .catch((err) => {
-        if (err.code === 11000) {
-          next(new ConflictError('Такой Email уже зарегистрирован!'));
-        } else if (err.errors.avatar) {
-          next(new BadRequestError(err.message));
-        }
-        next(err);
-      });
-  }
+      password: hash,
+    }))
+    .then((user) => {
+      res.send(controlResponse(user));
+    })
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Такой Email уже зарегистрирован!'));
+      } else if (err.errors.avatar) {
+        next(new BadRequestError(err.message));
+      }
+      next(err);
+    });
 };
 
 // Обновление профиля пользователя
 const updateProfile = (req, res, next) => {
-  // Проверка на наличие всех данных для обновления данных пользователя
-  const keyValues = ['name', 'about'];
-  if (!(keyValues.every((key) => Object.keys(req.body).includes(key)))) {
-    throw new BadRequestError('В форме пропущены данные!');
-  } else {
-    const { name, about } = req.body;
+  const { name, about } = req.body;
 
-    User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-      .orFail(() => new NotFoundError('Пользователь не найден!'))
-      .then((user) => res.send(controlResponse(user)))
-      .catch(next);
-  }
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .orFail(() => new NotFoundError('Пользователь не найден!'))
+    .then((user) => res.send(controlResponse(user)))
+    .catch(next);
 };
 
 // Обновление аватара пользователя
 const updateAvatar = (req, res, next) => {
-  // Проверка на наличие всех данных для обновления аватара пользователя
-  const keyValue = 'avatar';
-  if (!(Object.keys(req.body).includes(keyValue))) {
-    throw new BadRequestError('В форме пропущены данные!');
-  } else {
-    const { avatar } = req.body;
+  const { avatar } = req.body;
 
-    User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-      .orFail(() => new NotFoundError('Пользователь не найден!'))
-      .then((user) => {
-        res.send(controlResponse(user));
-      })
-      .catch((err) => next(new BadRequestError(err.message)));
-  }
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .orFail(() => new NotFoundError('Пользователь не найден!'))
+    .then((user) => {
+      res.send(controlResponse(user));
+    })
+    .catch((err) => next(new BadRequestError(err.message)));
 };
 
 module.exports = {
